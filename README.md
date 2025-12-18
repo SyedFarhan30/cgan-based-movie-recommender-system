@@ -178,8 +178,8 @@ Only users with at least one train and test interaction are evaluated.
 .
 ├── main.py
 ├── README.md
-├── ml-100k/          # MovieLens dataset (or zip)
-└── requirements.txt  # (optional)
+├── (movielens dataset files)    
+└── requirements.txt  
 ```
 
 ---
