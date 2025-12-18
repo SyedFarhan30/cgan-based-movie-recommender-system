@@ -31,56 +31,80 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom styling for larger text (no hiding of any UI elements)
+# Custom styling - hide GitHub/Share/Star but keep Settings, moderate text size
 custom_style = """
     <style>
-    /* Larger paragraph text */
+    /* Hide GitHub button, fork button, star button */
+    .styles_viewerBadge__CvC9N {display: none !important;}
+    .viewerBadge_container__r5tak {display: none !important;}
+    .viewerBadge_text__gg0EQ {display: none !important;}
+    
+    /* Hide the "hosted with Streamlit" footer link */
+    a[href="https://streamlit.io/cloud"] {display: none !important;}
+    
+    /* Hide deploy button */
+    .stDeployButton {display: none !important;}
+    
+    /* Hide MainMenu items we don't want but keep Settings */
+    #MainMenu {visibility: visible;}
+    
+    /* Moderate paragraph text */
     p, .stMarkdown p {
-        font-size: 1.1rem !important;
-        line-height: 1.6 !important;
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
     }
     
-    /* Larger headers */
+    /* Moderate headers */
     h1 {
-        font-size: 2.5rem !important;
+        font-size: 2.2rem !important;
     }
     
     h2 {
-        font-size: 2rem !important;
+        font-size: 1.7rem !important;
     }
     
     h3 {
-        font-size: 1.5rem !important;
-    }
-    
-    /* Larger text in expanders */
-    .streamlit-expanderContent p {
-        font-size: 1.1rem !important;
-    }
-    
-    /* Larger tab text */
-    .stTabs [data-baseweb="tab"] {
-        font-size: 1.1rem !important;
-    }
-    
-    /* Larger button text */
-    .stButton button {
-        font-size: 1.1rem !important;
-    }
-    
-    /* Larger selectbox text */
-    .stSelectbox label, .stSlider label, .stTextInput label {
-        font-size: 1.1rem !important;
-    }
-    
-    /* Larger metric text */
-    [data-testid="stMetricValue"] {
         font-size: 1.3rem !important;
     }
     
-    /* Larger sidebar text */
+    /* Moderate text in expanders */
+    .streamlit-expanderContent p {
+        font-size: 1rem !important;
+    }
+    
+    /* Moderate tab text */
+    .stTabs [data-baseweb="tab"] {
+        font-size: 1rem !important;
+    }
+    
+    /* Moderate button text */
+    .stButton button {
+        font-size: 1rem !important;
+    }
+    
+    /* Moderate selectbox text */
+    .stSelectbox label, .stSlider label, .stTextInput label {
+        font-size: 1rem !important;
+    }
+    
+    /* Moderate metric text */
+    [data-testid="stMetricValue"] {
+        font-size: 1.2rem !important;
+    }
+    
+    /* Moderate sidebar text */
     [data-testid="stSidebar"] p {
-        font-size: 1.05rem !important;
+        font-size: 0.95rem !important;
+    }
+    
+    /* Table text size */
+    table {
+        font-size: 0.95rem !important;
+    }
+    
+    /* Code block text */
+    code, pre {
+        font-size: 0.9rem !important;
     }
     </style>
 """
