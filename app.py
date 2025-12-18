@@ -31,34 +31,31 @@ st.set_page_config(
     layout="wide"
 )
 
-# Hide Streamlit default elements (GitHub, Share, Star, Menu, Footer)
+# Hide Streamlit default elements (GitHub, Share, Star) but KEEP the hamburger menu
 hide_streamlit_style = """
     <style>
-    /* Hide the hamburger menu */
-    #MainMenu {visibility: hidden;}
-    
-    /* Hide header */
-    header {visibility: hidden;}
-    
     /* Hide footer */
     footer {visibility: hidden;}
     
     /* Hide deploy button */
     .stDeployButton {display: none;}
     
-    /* Hide toolbar (GitHub, Star, Share) */
+    /* Hide toolbar (GitHub, Star, Share) - the icons in top right */
     [data-testid="stToolbar"] {display: none !important;}
     
     /* Hide status widget */
     [data-testid="stStatusWidget"] {display: none !important;}
     
-    /* Alternative selectors for toolbar */
+    /* Alternative selectors for toolbar icons */
     .css-14xtw13 {display: none !important;}
     .css-1dp5vir {display: none !important;}
     .css-1avcm0n {display: none !important;}
     
-    /* Remove top padding left by hidden header */
-    .block-container {padding-top: 1rem;}
+    /* Hide the decoration (colored line at top) - optional */
+    [data-testid="stDecoration"] {display: none !important;}
+    
+    /* Adjust top padding */
+    .block-container {padding-top: 2rem;}
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
