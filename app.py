@@ -37,19 +37,8 @@ hide_streamlit_style = """
     /* Hide footer */
     footer {visibility: hidden;}
     
-    /* Hide deploy button */
+    /* Hide deploy button only */
     .stDeployButton {display: none;}
-    
-    /* Hide toolbar (GitHub, Star, Share) - the icons in top right */
-    [data-testid="stToolbar"] {display: none !important;}
-    
-    /* Hide status widget */
-    [data-testid="stStatusWidget"] {display: none !important;}
-    
-    /* Alternative selectors for toolbar icons */
-    .css-14xtw13 {display: none !important;}
-    .css-1dp5vir {display: none !important;}
-    .css-1avcm0n {display: none !important;}
     
     /* Hide the decoration (colored line at top) - optional */
     [data-testid="stDecoration"] {display: none !important;}
