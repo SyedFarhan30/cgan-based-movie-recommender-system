@@ -31,6 +31,38 @@ st.set_page_config(
     layout="wide"
 )
 
+# Hide Streamlit default elements (GitHub, Share, Star, Menu, Footer)
+hide_streamlit_style = """
+    <style>
+    /* Hide the hamburger menu */
+    #MainMenu {visibility: hidden;}
+    
+    /* Hide header */
+    header {visibility: hidden;}
+    
+    /* Hide footer */
+    footer {visibility: hidden;}
+    
+    /* Hide deploy button */
+    .stDeployButton {display: none;}
+    
+    /* Hide toolbar (GitHub, Star, Share) */
+    [data-testid="stToolbar"] {display: none !important;}
+    
+    /* Hide status widget */
+    [data-testid="stStatusWidget"] {display: none !important;}
+    
+    /* Alternative selectors for toolbar */
+    .css-14xtw13 {display: none !important;}
+    .css-1dp5vir {display: none !important;}
+    .css-1avcm0n {display: none !important;}
+    
+    /* Remove top padding left by hidden header */
+    .block-container {padding-top: 1rem;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
 # ----------------------------
 # Session State Initialization
 # ----------------------------
@@ -455,6 +487,8 @@ def main():
         """,
         unsafe_allow_html=True
     )
+    
+    
 
 
 if __name__ == "__main__":
