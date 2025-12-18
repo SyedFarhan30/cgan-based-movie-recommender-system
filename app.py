@@ -31,37 +31,60 @@ st.set_page_config(
     layout="wide"
 )
 
-# Hide Streamlit default elements (GitHub, Share, Star, Menu, Footer)
-hide_streamlit_style = """
+# Custom styling for larger text (no hiding of any UI elements)
+custom_style = """
     <style>
-    /* Hide the hamburger menu */
-    #MainMenu {visibility: hidden;}
+    /* Larger paragraph text */
+    p, .stMarkdown p {
+        font-size: 1.1rem !important;
+        line-height: 1.6 !important;
+    }
     
-    /* Hide header */
-    header {visibility: hidden;}
+    /* Larger headers */
+    h1 {
+        font-size: 2.5rem !important;
+    }
     
-    /* Hide footer */
-    footer {visibility: hidden;}
+    h2 {
+        font-size: 2rem !important;
+    }
     
-    /* Hide deploy button */
-    .stDeployButton {display: none;}
+    h3 {
+        font-size: 1.5rem !important;
+    }
     
-    /* Hide toolbar (GitHub, Star, Share) */
-    [data-testid="stToolbar"] {display: none !important;}
+    /* Larger text in expanders */
+    .streamlit-expanderContent p {
+        font-size: 1.1rem !important;
+    }
     
-    /* Hide status widget */
-    [data-testid="stStatusWidget"] {display: none !important;}
+    /* Larger tab text */
+    .stTabs [data-baseweb="tab"] {
+        font-size: 1.1rem !important;
+    }
     
-    /* Alternative selectors for toolbar */
-    .css-14xtw13 {display: none !important;}
-    .css-1dp5vir {display: none !important;}
-    .css-1avcm0n {display: none !important;}
+    /* Larger button text */
+    .stButton button {
+        font-size: 1.1rem !important;
+    }
     
-    /* Remove top padding left by hidden header */
-    .block-container {padding-top: 1rem;}
+    /* Larger selectbox text */
+    .stSelectbox label, .stSlider label, .stTextInput label {
+        font-size: 1.1rem !important;
+    }
+    
+    /* Larger metric text */
+    [data-testid="stMetricValue"] {
+        font-size: 1.3rem !important;
+    }
+    
+    /* Larger sidebar text */
+    [data-testid="stSidebar"] p {
+        font-size: 1.05rem !important;
+    }
     </style>
 """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+st.markdown(custom_style, unsafe_allow_html=True)
 
 # ----------------------------
 # Session State Initialization
@@ -190,7 +213,7 @@ def main():
         k = st.slider("Top-K Recommendations", 5, 50, 10)
     
     # Main content tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Data & Training", "🎯 Get Recommendations", "👤 New User", "📈 Evaluation"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Data & Training", "🎯 Get Recommendations", "👤 New User", "📈 Evaluation", "ℹ️ About"])
     
     # Tab 1: Data Loading and Training
     with tab1:
@@ -476,6 +499,190 @@ def main():
                         st.metric(f"HitRate@{k}", f"{np.mean(hits):.4f}")
                     
                     st.info(f"Evaluated on {len(users_to_eval)} users")
+    
+    # Tab 5: About - System Architecture & Team
+    with tab5:
+        st.header("ℹ️ About This System")
+        
+        # System Overview
+        st.subheader("🎯 CGAN-Based Movie Recommender System")
+        st.markdown("""
+        This project implements a **Conditional Generative Adversarial Network (CGAN)** for movie recommendations 
+        using the MovieLens 100K dataset. Unlike traditional collaborative filtering methods, our approach 
+        leverages the power of generative models to learn complex user-item interaction patterns.
+        """)
+        
+        # How it Works
+        with st.expander("🔧 How Does It Work?", expanded=True):
+            st.markdown("""
+            ### Architecture Overview
+            
+            Our system uses a **Conditional GAN** architecture consisting of two neural networks that are trained together:
+            
+            #### 1. Generator (G)
+            - **Input**: User ID (converted to embedding) + Random noise vector
+            - **Output**: Probability distribution over all items (movies)
+            - **Purpose**: Learns to generate realistic item preference patterns for each user
+            - **Architecture**: 
+              - User Embedding Layer → Noise Concatenation → Hidden Layers → Output Layer (Sigmoid)
+            
+            #### 2. Discriminator (D)
+            - **Input**: User ID + Item interaction vector (real or generated)
+            - **Output**: Probability that the input is "real" (from actual user data)
+            - **Purpose**: Learns to distinguish between real user preferences and generated ones
+            - **Architecture**:
+              - User Embedding + Item Vector → Hidden Layers → Binary Classification
+            
+            ### Training Process
+            
+            ```
+            For each training epoch:
+                1. Sample a batch of users
+                2. Create real interaction vectors from training data
+                3. Generate fake interaction vectors using Generator
+                4. Train Discriminator to distinguish real vs fake
+                5. Train Generator to fool the Discriminator
+            ```
+            
+            ### Key Concepts
+            
+            | Component | Description |
+            |-----------|-------------|
+            | **User Embedding** | Dense vector representation of each user |
+            | **Noise Vector** | Random input that adds variation to generations |
+            | **Implicit Feedback** | Binary signal (liked/not liked) based on rating threshold |
+            | **Adversarial Training** | G and D compete, improving each other |
+            """)
+        
+        with st.expander("📊 Data Pipeline", expanded=False):
+            st.markdown("""
+            ### MovieLens 100K Dataset
+            
+            1. **Data Loading**: Extract and parse MovieLens 100K dataset
+            2. **Preprocessing**: 
+               - Build user and item ID mappings
+               - Convert explicit ratings to implicit feedback
+               - Split into train/test sets (u1-u5 splits available)
+            3. **Implicit Conversion**: 
+               - Ratings ≥ threshold → Positive interaction (1)
+               - Ratings < threshold → Negative/Unknown (0)
+            
+            ### Recommendation Generation
+            
+            ```python
+            # Pseudocode for generating recommendations
+            def recommend(user_id, k):
+                noise = sample_random_noise()
+                scores = Generator(user_embedding, noise)
+                exclude_seen_items(scores)
+                return top_k_items(scores, k)
+            ```
+            
+            We use **multiple noise samples** and average the scores for more stable recommendations.
+            """)
+        
+        with st.expander("📈 Evaluation Metrics", expanded=False):
+            st.markdown("""
+            ### Metrics Used
+            
+            | Metric | Formula | Description |
+            |--------|---------|-------------|
+            | **Recall@K** | `|Recommended ∩ Relevant| / |Relevant|` | Proportion of relevant items that are recommended |
+            | **NDCG@K** | Normalized Discounted Cumulative Gain | Measures ranking quality with position discounting |
+            | **HitRate@K** | `1 if any hit else 0` | Whether at least one relevant item is in top-K |
+            
+            ### Why These Metrics?
+            
+            - **Recall**: Measures coverage of user preferences
+            - **NDCG**: Rewards relevant items appearing earlier in the list
+            - **HitRate**: Simple success indicator for recommendation lists
+            """)
+        
+        with st.expander("⚙️ Hyperparameters Explained", expanded=False):
+            st.markdown("""
+            | Parameter | Default | Description |
+            |-----------|---------|-------------|
+            | `embed_dim` | 64 | Dimensionality of user embeddings |
+            | `noise_dim` | 32 | Size of random noise vector |
+            | `hidden_dim` | 256 | Size of hidden layers in G and D |
+            | `learning_rate` | 2e-4 | Adam optimizer learning rate |
+            | `batch_size` | 1024 | Number of users per training batch |
+            | `epochs` | 10 | Number of training iterations |
+            | `pos_threshold` | 4 | Rating threshold for positive feedback |
+            """)
+        
+        st.markdown("---")
+        
+        # Team Section
+        st.subheader("👥 Meet The Team")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("""
+            <div style='text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);'>
+                <h3 style='color: #ffffff; margin-bottom: 5px;'>👨‍💻 Saad Hussain</h3>
+                <p style='color: #e0e0e0; margin-bottom: 15px;'>Team Member</p>
+                <a href='https://github.com/saadhusayn' target='_blank' style='text-decoration: none;'>
+                    <img src='https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white' alt='GitHub'>
+                </a>
+                <br><br>
+                <a href='https://www.linkedin.com/in/saadhusayn/' target='_blank' style='text-decoration: none;'>
+                    <img src='https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white' alt='LinkedIn'>
+                </a>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div style='text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);'>
+                <h3 style='color: #ffffff; margin-bottom: 5px;'>👨‍💻 Syed Farhan Ali</h3>
+                <p style='color: #e0e0e0; margin-bottom: 15px;'>Team Member</p>
+                <a href='https://github.com/SyedFarhan30' target='_blank' style='text-decoration: none;'>
+                    <img src='https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white' alt='GitHub'>
+                </a>
+                <br><br>
+                <a href='https://www.linkedin.com/in/farhan-ali-02453a286/' target='_blank' style='text-decoration: none;'>
+                    <img src='https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white' alt='LinkedIn'>
+                </a>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("""
+            <div style='text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);'>
+                <h3 style='color: #ffffff; margin-bottom: 5px;'>👨‍💻 Kirsh Talreja</h3>
+                <p style='color: #e0e0e0; margin-bottom: 15px;'>Team Member</p>
+                <a href='https://github.com/kirshtalreja24' target='_blank' style='text-decoration: none;'>
+                    <img src='https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white' alt='GitHub'>
+                </a>
+                <br><br>
+                <a href='https://www.linkedin.com/in/kirsh-talreja-194a77293?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app' target='_blank' style='text-decoration: none;'>
+                    <img src='https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white' alt='LinkedIn'>
+                </a>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Project Links
+        st.subheader("🔗 Project Resources")
+        st.markdown("""
+        - 📚 **Dataset**: [MovieLens 100K](https://grouplens.org/datasets/movielens/100k/)
+        - 📄 **Documentation**: See README.md for detailed setup instructions
+        """)
+        
+        # Tech Stack
+        st.subheader("🛠️ Technology Stack")
+        tech_col1, tech_col2, tech_col3, tech_col4 = st.columns(4)
+        with tech_col1:
+            st.markdown("![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)")
+        with tech_col2:
+            st.markdown("![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)")
+        with tech_col3:
+            st.markdown("![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)")
+        with tech_col4:
+            st.markdown("![NumPy](https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white)")
     
     # Footer
     st.markdown("---")
