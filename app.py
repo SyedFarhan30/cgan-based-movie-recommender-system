@@ -31,22 +31,29 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom styling - hide GitHub/Share/Star but keep Settings, moderate text size
+# Custom styling - hide toolbar (GitHub/Share/Star) completely, moderate text size
 custom_style = """
     <style>
-    /* Hide GitHub button, fork button, star button */
-    .styles_viewerBadge__CvC9N {display: none !important;}
-    .viewerBadge_container__r5tak {display: none !important;}
-    .viewerBadge_text__gg0EQ {display: none !important;}
+    /* Hide the entire toolbar with GitHub, Share, Star buttons */
+    [data-testid="stToolbar"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
     
-    /* Hide the "hosted with Streamlit" footer link */
-    a[href="https://streamlit.io/cloud"] {display: none !important;}
+    /* Hide header */
+    header[data-testid="stHeader"] {
+        display: none !important;
+    }
     
     /* Hide deploy button */
-    .stDeployButton {display: none !important;}
+    .stDeployButton {
+        display: none !important;
+    }
     
-    /* Hide MainMenu items we don't want but keep Settings */
-    #MainMenu {visibility: visible;}
+    /* Hide footer */
+    footer {
+        visibility: hidden !important;
+    }
     
     /* Moderate paragraph text */
     p, .stMarkdown p {
@@ -105,6 +112,11 @@ custom_style = """
     /* Code block text */
     code, pre {
         font-size: 0.9rem !important;
+    }
+    
+    /* Adjust top padding since header is hidden */
+    .block-container {
+        padding-top: 1rem !important;
     }
     </style>
 """
