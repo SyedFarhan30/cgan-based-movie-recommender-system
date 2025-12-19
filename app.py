@@ -24,11 +24,12 @@ from main import (
     hitrate_at_k,
 )
 
-# Page config
+# Page config - sidebar always expanded (not collapsible)
 st.set_page_config(
     page_title="Movie-Recommender",
     page_icon="🎬",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 # Custom styling - hide toolbar (GitHub/Share/Star) completely, moderate text size
@@ -40,13 +41,24 @@ custom_style = """
         visibility: hidden !important;
     }
     
-    /* Hide header */
-    header[data-testid="stHeader"] {
+    /* Hide deploy button */
+    .stDeployButton {
         display: none !important;
     }
     
-    /* Hide deploy button */
-    .stDeployButton {
+    /* Make sidebar always visible and prevent collapse */
+    [data-testid="stSidebar"] {
+        min-width: 300px !important;
+        max-width: 300px !important;
+        transform: none !important;
+    }
+    
+    /* Hide the collapse button since sidebar is always visible */
+    [data-testid="stSidebar"] button[kind="header"] {
+        display: none !important;
+    }
+    
+    [data-testid="collapsedControl"] {
         display: none !important;
     }
     
@@ -543,42 +555,47 @@ def main():
         # System Overview
         st.subheader("🎯 CGAN-Based Movie Recommender System")
         st.markdown("""
-        This project implements a **Conditional Generative Adversarial Network (CGAN)** for movie recommendations 
-        using the MovieLens 100K dataset. Unlike traditional collaborative filtering methods, our approach 
-        leverages the power of generative models to learn complex user-item interaction patterns.
+        This project implements a **Collaborative Generative Adversarial Network (CGAN)** for building a 
+        **user–item recommendation system** using the **MovieLens 100K** dataset.
+        
+        Unlike traditional matrix factorization–based recommenders, this system frames recommendation as an 
+        **adversarial learning problem**, where:
+        - A **Generator** proposes plausible items for a user, and
+        - A **Discriminator** judges whether a user–item interaction looks real or generated.
+        
+        The project supports:
+        - End-to-end training on MovieLens 100K
+        - Human-readable movie recommendations (movie title + ID)
+        - An **interactive new-user flow**, where a new user rates a few movies and receives personalized recommendations
         """)
         
         # How it Works
         with st.expander("🔧 How Does It Work?", expanded=True):
             st.markdown("""
-            ### Architecture Overview
+            ### CGAN Architecture
             
-            Our system uses a **Conditional GAN** architecture consisting of two neural networks that are trained together:
+            Our system uses a **Collaborative GAN** architecture consisting of two neural networks trained adversarially:
             
             #### 1. Generator (G)
-            - **Input**: User ID (converted to embedding) + Random noise vector
-            - **Output**: Probability distribution over all items (movies)
-            - **Purpose**: Learns to generate realistic item preference patterns for each user
-            - **Architecture**: 
-              - User Embedding Layer → Noise Concatenation → Hidden Layers → Output Layer (Sigmoid)
+            - **Input**: User embedding + Random noise vector
+            - **Output**: Scores over all items
+            - **Role**: Generate items that *could plausibly* be liked by the user
+            - Mathematically: `G(u, z) → item scores`
             
             #### 2. Discriminator (D)
-            - **Input**: User ID + Item interaction vector (real or generated)
-            - **Output**: Probability that the input is "real" (from actual user data)
-            - **Purpose**: Learns to distinguish between real user preferences and generated ones
-            - **Architecture**:
-              - User Embedding + Item Vector → Hidden Layers → Binary Classification
+            - **Input**: User embedding + Item embedding
+            - **Output**: Probability that the interaction is real
+            - **Role**: Distinguish real user–item interactions from generated ones
+            - Mathematically: `D(u, i) → P(real)`
             
-            ### Training Process
+            ### Training Objective
             
-            ```
-            For each training epoch:
-                1. Sample a batch of users
-                2. Create real interaction vectors from training data
-                3. Generate fake interaction vectors using Generator
-                4. Train Discriminator to distinguish real vs fake
-                5. Train Generator to fool the Discriminator
-            ```
+            The model is trained adversarially:
+            - **Discriminator loss**: Real interactions → label 1, Fake interactions → label 0
+            - **Generator loss**: Tries to fool the discriminator into predicting 1 for generated items
+            
+            Binary Cross-Entropy (BCE) loss is used for both networks. To stabilize training, generator-based 
+            negatives are mixed with random negative samples.
             
             ### Key Concepts
             
@@ -586,7 +603,7 @@ def main():
             |-----------|-------------|
             | **User Embedding** | Dense vector representation of each user |
             | **Noise Vector** | Random input that adds variation to generations |
-            | **Implicit Feedback** | Binary signal (liked/not liked) based on rating threshold |
+            | **Implicit Feedback** | Ratings ≥ 4 → positive (1), otherwise ignored |
             | **Adversarial Training** | G and D compete, improving each other |
             """)
         
@@ -621,11 +638,22 @@ def main():
             st.markdown("""
             ### Metrics Used
             
-            | Metric | Formula | Description |
-            |--------|---------|-------------|
-            | **Recall@K** | `|Recommended ∩ Relevant| / |Relevant|` | Proportion of relevant items that are recommended |
-            | **NDCG@K** | Normalized Discounted Cumulative Gain | Measures ranking quality with position discounting |
-            | **HitRate@K** | `1 if any hit else 0` | Whether at least one relevant item is in top-K |
+            #### Recall@K
+            Measures the proportion of relevant items that are successfully recommended:
+            
+            $$\\text{Recall@K} = \\frac{|\\text{Recommended}_K \\cap \\text{Relevant}|}{|\\text{Relevant}|}$$
+            
+            #### NDCG@K (Normalized Discounted Cumulative Gain)
+            Measures ranking quality with position-based discounting:
+            
+            $$\\text{DCG@K} = \\sum_{i=1}^{K} \\frac{rel_i}{\\log_2(i+1)}$$
+            
+            $$\\text{NDCG@K} = \\frac{DCG@K}{IDCG@K}$$
+            
+            #### HitRate@K
+            Binary indicator of whether at least one relevant item is in top-K:
+            
+            $$\\text{HitRate@K} = \\begin{cases} 1 & \\text{if } |\\text{Recommended}_K \\cap \\text{Relevant}| > 0 \\\\ 0 & \\text{otherwise} \\end{cases}$$
             
             ### Why These Metrics?
             
